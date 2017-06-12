@@ -1,0 +1,116 @@
+<html>
+<head><!--HEllo!-->
+<title> Youtube Downloader </title>
+<script src = "scripts/parse_str.js"></script>
+<script>
+var My = {
+        oG: function(a) {
+            a.reverse();
+        },
+        Ai: function(a, b) {
+            var c = a[0];
+            a[0] = a[b % a.length];
+            a[b] = c;
+        },
+        x5: function(a, b) {
+            a.splice(0, b);
+        }}
+Ny = function(a) {
+        a = a.split("");
+        My.Ai(a, 17);
+        My.x5(a, 3);
+        My.oG(a, 14);
+        My.x5(a, 3);
+        My.Ai(a, 26);
+        My.oG(a, 41);
+        My.Ai(a, 19);
+        My.x5(a, 2);
+        My.Ai(a, 8);
+        return a.join("");
+    };
+       
+function get (URL){
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET","https://crossorigin.me/"+ URL,false);
+    xhr.send();
+    return xhr.responseText;
+  }
+  function curl(url) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('get', 'https://allow-any-origin.appspot.com/' + url, false);
+    xhr.send();
+    return xhr.responseText;
+}
+</script>
+</head>
+<body>
+<form onsubmit="return false;">
+<input type="text"> </input>
+<button type= "submit" onclick="start(input.value)"> Start </button>
+</form>
+<div>
+  <a href="#" onclick="if (advanced === false) {advanced = true;} else{advanced=false} start(input.value)"> Toggle Advanced Settings.</a>
+  <ol> </ol>
+</div>
+<script>
+var advanced = false;
+var input = document.querySelector("input");
+var div1 = document.querySelector("div");
+var ol = document.querySelector("ol");
+var p = [];
+var a =  [];
+var li = [];
+var regx = /(https?:\/\/)?(www.)?(youtu.be\/\w+)/
+function start(url){
+while(ol.firstChild){
+  ol.removeChild(ol.firstChild);
+}
+
+var param = {}
+x = url.split('?')
+parse_str(x[1],param);
+var id = param.v
+if(regx.test(url)){
+            var id = url.split("youtu.be/")[1];
+            console.log(id);
+}
+var data = get("https://www.youtube.com/get_video_info?html5=1&video_id="+ id+"&cpn=8ufzC6GPWyHIsXOd&eurl&el=vevo&el=embedded&hl=en_US&sts=16777&lact=217&width=1024&height=290&authuser=0&ei=BXN8VpeNE8yQ-QOHp7uAAw&iframe=1&c=WEB&cver=html5&cplayer=UNIPLAYER&cbr=Chrome&cbrver=49.0.2587.3&cos=X11");;
+var info = {};
+parse_str(data,info);
+console.log(info)
+if (advanced === true){
+var streams = [info.adaptive_fmts,info.url_encoded_fmt_stream_map].join(",").split(',');
+}
+else {
+  var streams = info.url_encoded_fmt_stream_map.split(',');
+
+}
+console.log(streams)
+var results = [];
+  for(var i=0; i<streams.length; i++){
+   var real_stream = {};
+   parse_str(streams[i], real_stream);
+   console.log(real_stream);
+      if (real_stream.s){
+   real_stream.url += '&signature=' + Ny(real_stream.s);}
+   real_stream.url += "&title="+info.title;
+   results.push(real_stream);
+   a[i] = document.createElement("A");
+   p[i] = document.createElement("P");
+   p[i].appendChild(document.createTextNode("Type: " +real_stream.type))
+   a[i].appendChild(document.createTextNode("Link #"+(i+1)))
+   a[i].setAttribute("href",results[i].url);
+   a[i].setAttribute("download",info.title);
+   li[i] = document.createElement("LI");
+
+   li[i].appendChild(a[i]);
+   if (advanced === true){
+   li[i].appendChild(p[i]);
+ }
+   ol.appendChild(li[i])
+  }
+}
+
+</script>
+</body>
+</html>

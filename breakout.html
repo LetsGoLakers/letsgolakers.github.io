@@ -1,0 +1,409 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title> Breakout </title>
+    <style>
+        canvas {
+          border: 10px solid #d3d3d3;
+        }
+
+
+    </style>
+    <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.6/material.indigo-pink.min.css">
+    <script src="https://storage.googleapis.com/code.getmdl.io/1.0.6/material.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <audio src = 'breadfish/breadfish.mp3' style='display:none;'> </audio>
+    <audio src ='https://www.gstatic.com/images-breakout/ball-origin-beep.mp3' id='wall' style='display:none;'> </audio>
+    <audio src ='https://www.gstatic.com/images-breakout/paddle-beep.mp3' id='paddleBeep' style='display: none;'> </audio>
+    <audio src ='https://www.gstatic.com/images-breakout/red-beep.mp3' id='brickBeep' style='display: none;'> </audio>
+</head>
+
+<body>
+
+    <center> <canvas height="300" width="600"> </canvas>
+    <br><!-- Slider with Starting Value -->
+    <video style ="display:none;"> <source src="breadfish/breadfish.webm" type='video/webm'>  </video>
+    <p style="width:600px">
+    <input class="mdl-slider mdl-js-slider" type="range" min="0" max="100" value="25" tabindex="0">
+    </p></center>
+    <script>
+    	var isPlaying = false;
+    	var b = 0;
+    	var f = 0;
+    	var v = document.querySelector("video");
+    	var slider = document.querySelector("input");
+        var canvas = document.querySelector("canvas");
+        var mp3s = document.querySelectorAll("audio");
+        var breadFish = mp3s[0];
+        var wall = mp3s[1];
+        var paddleBeep = mp3s[2];
+        var brickBeep = mp3s[3];
+        var ctx = canvas.getContext("2d");
+        var width = canvas.width,
+            height = canvas.height;
+	var rx = 5,
+        ry = 3,
+        oy = 150,
+	ox = 150;
+        var round = 1;
+        var liveX = 35;
+        var start;
+        var level = 1;
+        var lives = 3;
+        var volume;
+        var second = 4;
+        var canvasMin = canvas.offsetLeft,
+            canvasMax = canvasMin + width;
+        var x = width / 2,
+            y = height / 2;
+        var dx = 3,
+            dy = 6;
+        var arrayColors = ["red", "#f9c309", "#6533ff", "#00ccff", "#00ff00", "#6600cc"];
+        var leftDown = false,
+            rightDown = false;
+        function volumeChange() {
+            volume = slider.value;
+            for (var i = 0; i < mp3s.length; i++) {
+                mp3s[i].volume = volume / 100;
+            }
+        }
+        function cheat(levelNum){
+            if (levelNum == undefined){
+                levelNum = level;
+            }
+            lives = Infinity;
+            paddle.width = slider.value * 2;
+            level = levelNum;
+        }
+        function write(text) {
+            clear();
+            ctx.textAlign = "center";
+            ctx.font = "30px Arial";
+            ctx.fillText(text, width / 2, height / 2);
+        }
+        write("Press Spacebar to Start");
+        function warn() {
+        	if (isPlaying!=true){
+            var d = setInterval(function() {
+                clear();
+                write(second - 1);
+                second--;
+                if (second === 0) {
+                    clear();
+                    write("Go!");
+                    setTimeout(function() {
+                        clear();
+                        clearInterval(d);
+                        clear();
+                        second = 4;
+                        Start();
+                    }, 1000)
+                }
+            }, 1000);
+        }}
+        function check() {
+            var counterCheck = 0;
+            for (var i = 0; i < Bricks.rows; i++) {
+                for (var k = 0; k < Bricks.columns; k++) {
+                    counterCheck += Bricks.bricks[i][k];
+                }
+            }
+            return counterCheck;
+        }
+        function randomNumber(num, secNum, thirdNum) {
+            if (num == undefined) {
+                num = 200;
+            }
+            if (secNum == undefined) {
+                secNum = 100;
+            }
+            if (thirdNum == undefined) {
+                thirdNum = 100;
+            }
+            return (Math.round(Math.random() * num) - secNum) / thirdNum;
+        }
+        function Start() {
+            if ((level == 3 || level == 5 || level == 8 || level == 10) && round === 1){
+                lives++;
+            }
+            start = setInterval(draw, 20);
+            if (lives >= 1) {
+                x = 150;
+                y = 150;
+                oy = 150;
+                ox =150;
+            } else if (lives >= 1 == !true) {
+                createBricks(level);
+                x = 150;
+                y = 150;
+                oy = 150;
+                ox = 150;
+                lives = 3;
+                round++;
+                if (level > 1) {
+                    liveX = 35;
+                }
+            }
+            if (level === 2) {
+                Bricks.bricks[5][0] = 0;
+                Bricks.bricks[5][4] = 0;
+            }
+            /* catsMp3.play();
+            catsMp3.loop = true; */
+        }
+        function bricks() {
+            this.rows = 5;
+            this.columns = 5;
+            this.width = width / this.columns - 1;
+            this.height = 15;
+            this.padding = 1;
+            this.bricks = new Array(this.rows);
+            this.beep = mp3s[3];
+        }
+        var Bricks = new bricks;
+        function Paddle() {
+            this.height = 10;
+            this.width = 130;
+            this.x = x - this.width / 2;
+            this.y = height - this.height;
+            this.beep = mp3s[2];
+        };
+        var paddle = new Paddle;
+        function onMouseMove(e) {
+            if (e.pageX > canvasMin && e.pageX < canvasMax) {
+                paddle.x = e.pageX - canvasMin;
+            }
+        }
+        function onKeyDown(e) {
+            if (e.keyCode === 37) {
+                leftDown = true;
+            }
+            if (e.keyCode === 39) {
+                rightDown = true;
+            }
+            if (e.keyCode === 66){
+            	b = 1;
+            }
+            if (e.keyCode === 70){
+            	f = 1;
+            }
+        }
+        function onKeyPress(e){
+
+            if (e.keyCode === 32){
+            	warn();
+            }
+        }
+        function onKeyUp(e) {
+            if (e.keyCode === 37) {
+                leftDown = false;
+            }
+            if (e.keyCode === 39) {
+                rightDown = false;
+            }
+            if (e.keyCode === 66){
+            	b = 0;
+            }
+            if (e.keyCode === 70){
+            	f = 0;
+            }
+
+        }
+        function circle(x, y, r) {
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fillStyle = "#00ffb6";
+            ctx.fill();
+        }
+        function rectangle(x, y, w, h) {
+            ctx.beginPath();
+            ctx.rect(x, y, w, h);
+            ctx.closePath();
+            ctx.fill();
+        }
+        function clear() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        document.onmousemove = onMouseMove;
+        document.onkeydown = onKeyDown;
+        document.onkeyup = onKeyUp;
+        document.onkeypress = onKeyPress;
+        function createBricks(level) {
+            for (var i = 0; i < Bricks.rows; i++) {
+                Bricks.bricks[i] = new Array(Bricks.columns)
+                for (var k = 0; k < Bricks.columns; k++) {
+                    Bricks.bricks[i][k] = 1;
+                }
+            }
+        }
+        createBricks()
+        function draw() {
+            volumeChange()
+            clear();
+            x += dx;
+            y += dy;
+            circle(x, y, 10);
+            if (level === 10){
+            oy += ry;
+            ox += rx;
+            paddle.width = 50;
+            circle (ox, oy, 10);}
+            if (check() == 0) {
+                clear();
+                clearInterval(start);
+                level++;
+                round = 1;
+                if (level == 2){
+                Bricks.rows = 6;
+                }
+                createBricks(level);
+                clear();
+                if (level === 2) {
+                    Bricks.bricks[5][0] = 0;
+                    Bricks.bricks[5][4] = 0;
+                }
+                clearInterval(start);
+                clear();
+                ctx.font = "30px Arial";
+                ctx.textAlign = "center";
+                clear();
+                ctx.fillText("Level Cleared", width / 2, height / 2);
+                ctx.font = "15px Arial";
+                ctx.fillText("Press Space To Continue", width / 2, height / 2 + 25);
+                if (level === 11){
+                clear();
+                clearInterval(start);
+                clear();
+                write("You Won!");
+
+            }
+            }
+            ctx.font = "14px Arial";
+
+            ctx.fillText("Lives: " + (lives - 1), liveX, height - 10);
+            if (level!=11){
+            for (var i = 0; i < Bricks.rows; i++) {
+                ctx.fillStyle = arrayColors[i]
+                for (var k = 0; k < Bricks.columns; k++) {
+                    if (Bricks.bricks[i][k] === 1) {
+                        rectangle(k * (Bricks.width + Bricks.padding) + Bricks.padding, i * (Bricks.height + Bricks.padding) + Bricks.padding, Bricks.width, Bricks.height)
+                    }
+                }
+            }
+            }
+            rowHeight = Bricks.height + Bricks.padding;
+            columnWidth = Bricks.width + Bricks.padding;
+            row = Math.floor(y / rowHeight);
+            column = Math.floor(x / columnWidth);
+            if (level == 10){
+            row2 = Math.floor(oy / rowHeight);
+            column2 = Math.floor(ox / columnWidth);}
+            if (y < Bricks.rows * rowHeight && row >= 0 && column >= 0 && Bricks.bricks[row][column] === 1) {
+                dy = -dy + (randomNumber() / 7);
+                Bricks.bricks[row][column] = 0;
+                brickBeep.play();
+            }
+            if (level === 10){
+            if (oy < Bricks.rows * rowHeight && row2 >= 0 && column2 >= 0 && Bricks.bricks[row2][column2] === 1) {
+                ry = -ry + (randomNumber() / 7);
+                Bricks.bricks[row2][column2] = 0;
+                brickBeep.play();
+            }}
+            if (leftDown === true) {
+                paddle.x -= 8;
+            }
+            if (rightDown === true) {
+                paddle.x += 8;
+            }
+
+            ctx.fillStyle = "#ff00ff";
+            rectangle(paddle.x, paddle.y, paddle.width, paddle.height);
+            if (x + dx > width || x + dx < 0) {
+                dx = -dx + (randomNumber() / 10);
+                wall.play();
+            }
+            if (level === 10){
+            if (ox + rx > width || ox + rx < 0) {
+                rx = -rx + (randomNumber() / 10);
+                wall.play();
+
+            }
+            if (oy + ry < 0) {
+                ry = -ry + (randomNumber() / 10);
+                wall.play();
+            }}
+            if (y + dy < 0) {
+                dy = -dy + (randomNumber() / 10);
+                wall.play();
+            }
+            if (level === 10){
+             if (oy + ry > height) {
+                if (ox > paddle.x && ox < paddle.x + paddle.width) {
+                    ry = -ry + (randomNumber() / 2);
+                    paddleBeep.play();
+                } else {
+                    clearInterval(start);
+                    lives--;
+                    round++;
+                    if (lives <= 0) {
+                        lives = 0;
+                        clear();
+                        ctx.fillStyle = "#b108ff";
+                        ctx.font = "30px Arial";
+                        ctx.textAlign = "center";
+                        ctx.fillText("Game Over!", width / 2, height / 2);
+                        ctx.font = '15px Arial';
+                        ctx.fillText("Press Start to Play Again", width / 2, height / 2 + 25);
+                        clearInterval(start);
+                    }
+                }
+            }}
+            if (y + dy > height) {
+                if (x > paddle.x && x < paddle.x + paddle.width) {
+                    dy = -dy + (randomNumber() / 2);
+                    dx = 8 * ((x-(paddle.x+paddle.width/2))/paddle.width)
+                    paddleBeep.play();
+                } else {
+                    clearInterval(start);
+                    lives--;
+                    if (lives <= 0) {
+                        lives = 0;
+                        clear();
+                        ctx.fillStyle = "#b108ff";
+                        ctx.font = "30px Arial";
+                        ctx.textAlign = "center";
+                        ctx.fillText("Game Over!", width / 2, height / 2);
+                        ctx.font = '15px Arial';
+                        ctx.fillText("Press Start to Play Again", width / 2, height / 2 + 25);
+                        clearInterval(start);
+                    }
+                }
+            }
+            if (paddle.x < 0) {
+                paddle.x = 0;
+            }
+            if (paddle.x > width - paddle.width) {
+                paddle.x = width - paddle.width;
+            }
+            if ((f === 1&& b === 1) || level === 11){
+            	clearInterval(start)
+            	breadFish.play();
+            	breadFish.volume = 1;
+            	cheat(10);
+            	paddle.width = 1000;
+            	isPlaying = true;
+
+
+            	var breadPlay = setInterval(function() {ctx.drawImage(v,0,0,width,height)},10);
+            	v.play()
+            	setTimeout(function(){isPlaying = false;clearInterval(breadPlay);clear();},300000)
+            	clear();
+
+            }
+        }</script>
+
+</body>
+
+</html>

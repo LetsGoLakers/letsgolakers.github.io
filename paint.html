@@ -1,0 +1,57 @@
+<html>
+<head> <title> Paint </title> </head><body>
+<style> canvas {
+  border-style:solid;
+} </style>
+<canvas height="400" width="500"> </canvas>
+<button onclick="color = prompt('Enter Color: ')">
+Change Color
+</button>
+<button onclick = "pixelWidth = prompt('Enter Pixel Width')">
+Change Pixel Width
+</button>
+<button onclick = "ctx.clearRect(0,0,width,height)">
+Clear
+</button>
+<script>
+var canvas = document.querySelector("canvas");
+var ctx = canvas.getContext("2d");
+var width = canvas.width;
+var height = canvas.height;
+var color = "red";
+var pixelWidth = 10;
+var mouseClicked = false;
+function circle (x,y){
+ctx.beginPath();
+ctx.arc(x,y,pixelWidth,0,Math.PI*2);
+ctx.fillStyle = color;
+ctx.closePath();
+ctx.fill();
+}
+function onMouseMove(e){
+if (mouseClicked == true){
+circle(e.pageX,e.pageY);
+}
+}
+function onMouseDown(){
+mouseClicked = true
+}
+function onMouseUp(){
+mouseClicked = false;
+}
+function onTouchStart(){
+mouseClicked = true;
+}
+function onTouchEnd(){
+mouseClicked = false;
+}
+document.ontouchmove = onMouseMove;
+document.ontouchend = onTouchEnd;
+document.ontouchstart = onTouchStart;
+document.onmousemove = onMouseMove;
+document.onmouseup = onMouseUp;
+document.onmousedown = onMouseDown;
+
+</script>
+</body>
+</html>

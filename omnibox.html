@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<!--/alertify.prompt("s",function(val){
+alertify.success(val)},function(event){
+event.preventDefault();
+alertify.error(null)})!-->
+<!-- OYE, ABRE TUS OJOS!-->
+<html>
+    <head>
+
+        <link href="./stylesheets/o.css" rel="stylesheet">
+         <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.4/material.red-blue.min.css" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <script src="./scripts/o.js"></script>
+       <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<script src="https://storage.googleapis.com/code.getmdl.io/1.0.4/material.min.js"></script>
+
+
+<style>
+        body{background-color:#f9f9f9;}
+        li {
+  font-family: Roboto, sans-serif;
+}
+
+a, li {
+  color: #6b6b6b;
+  text-decoration: none;
+}
+
+.menuOptions > li {
+  display: inline-block;
+  padding: 0.5em 16px;
+  cursor: pointer;
+}
+.menuOptions > li:hover {
+  background: #ebebeb;
+}
+
+.drop {
+  position: relative;
+    left:-15px;
+}
+.drop ul {
+  position: absolute;
+  left: 0;
+  top: 3em;
+          transition: all 0.3s ease;
+          transform: scale(0);
+
+          transform-origin: 0 0;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.16), 0 2px 8px 0 rgba(0, 0, 0, 0.12);
+}
+.drop ul li {
+  display: block;
+  width: 100%;
+}
+.drop ul li a {
+  width: 118%;
+  padding: 1em 18px;
+  display: inline-block;
+  white-space: pre;
+  box-sizing: border-box;
+  left:-40px;
+  position:relative;
+  text-align:center;
+    background-color:#fff;
+    text-decoration:none;
+
+}
+.drop ul li a:hover {
+  background: #ebebeb;
+}
+.drop:hover ul {
+  -webkit-transform: scale(1);
+      -ms-transform: scale(1);
+          transform: scale(1);
+}
+    </style>
+        <title>Omnibox</title>
+    </head>
+<body>
+
+    <center>
+<form id="searchMe">
+    <div class="mdl-textfield mdl-js-textfield">
+<input  placeholder="Enter Search Query or URL" style="z-index: 3; width:800px; font-size:19px" type="text" class='mdl-textfield__input ' id="goTo"/>
+
+<button onclick="searchFunc()" type="submit" class="mdl-button mdl-js-button mdl-js-ripple-effect" style='right:-577px'> Search </button>
+</div>
+</form>
+
+</center>
+<br/>
+<br/>
+    <br/>
+    <style>
+.demo-card-wide.mdl-card {
+  width: 370;
+  right:-150px;
+}
+</style>
+<br>
+<div class="demo-card-wide mdl-card mdl-shadow--2dp">
+  <ul class="menuOptions">
+  <li class="drop">  <i class="material-icons">more_vert</i>
+    <ul>
+      <li><a href="#" onclick='promptLocation()'>Change Location of Weather   </a></li>
+
+    </ul>
+  </li>
+
+</ul>
+   <div id="con1">
+   <h4> Weather Not Working Right Now <br> <center>:(</center> </h4>
+  </div>
+  </div>
+
+  <div class="mdl-card__menu">
+    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
+    </button>
+  </div>
+
+    <div class="biggerPicture">
+    <center>
+<button class="clickMeToChangeURL mdl-button mdl-js-button mdl-js-ripple-effect"> Search Engine Options</button>
+</center>
+<br/>
+
+
+<div id="changeUrl">
+<p style="font-size:17px"> To change the default search engine enter a custom search engines URL, in the format: <em> bing.com</em> or if that doesn't work, use the format: <em>search.yahoo.com</em></p>
+
+
+
+
+<p> Custom Search Engine URL: </p>
+<form autocomplete="on"  onsubmit="return returnFals();">
+   <input style="font-size:19px" type="text" id="website" placeholder="Enter URL"/>
+    <button  onclick="test();" type="submit" class="mdl-button mdl-js-button mdl-js-ripple-effect "> Submit
+        </button>
+</form>
+
+
+
+
+    <br/>
+    <div id="currentEngine"> </div>
+<strong style="font-size:17px"> <br/> Note: Not all search engines will work properly and some may not work at all. </strong>
+</div>
+</div>
+<script src="https://cdn.rawgit.com/alertifyjs/alertify.js/master/dist/js/alertify.js">
+</script>
+</body>
+</html>
