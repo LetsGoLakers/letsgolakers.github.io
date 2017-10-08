@@ -2,6 +2,7 @@
 <head><!--HEllo!-->
 <title> Youtube Downloader </title>
 <script src = "scripts/parse_str.js"></script>
+<script src="scripts/get.js"></script>
 <script>
 var My = {
         oG: function(a) {
@@ -74,7 +75,7 @@ if(regx.test(url)){
             var id = url.split("youtu.be/")[1];
             console.log(id);
 }
-var data = get("https://www.youtube.com/get_video_info?html5=1&video_id="+ id+"&cpn=8ufzC6GPWyHIsXOd&eurl&el=vevo&el=embedded&hl=en_US&sts=16777&lact=217&width=1024&height=290&authuser=0&ei=BXN8VpeNE8yQ-QOHp7uAAw&iframe=1&c=WEB&cver=html5&cplayer=UNIPLAYER&cbr=Chrome&cbrver=49.0.2587.3&cos=X11");;
+var data = curl("https://www.youtube.com/get_video_info?html5=1&video_id="+ id+"&cpn=8ufzC6GPWyHIsXOd&eurl&el=vevo&el=embedded&hl=en_US&sts=16777&lact=217&width=1024&height=290&authuser=0&ei=BXN8VpeNE8yQ-QOHp7uAAw&iframe=1&c=WEB&cver=html5&cplayer=UNIPLAYER&cbr=Chrome&cbrver=49.0.2587.3&cos=X11");;
 var info = {};
 parse_str(data,info);
 console.log(info)
