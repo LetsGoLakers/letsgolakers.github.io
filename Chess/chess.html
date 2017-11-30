@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Chess</title>
+
+  <link rel="stylesheet" href="./css/chessboard-0.3.0.css">
+</head>
+
+<body>
+  <div id="board" style="width: 400px"> </div>
+  <script src="./js/chessboard-0.3.0.min.js" charset="utf-8"></script>
+  <script src="https://cdn.rawgit.com/lhartikk/simple-chess-ai/master/lib/js/chess.js"></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous">
+  </script>
+  <script src="./js/nn.js" charset="utf-8"></script>
+  <script>
+    var game = new Chess();
+
+    function onDragStart(source, piece, position, orientation) {
+      if (game.game_over() === true ||
+        (game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+        (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+        return false;
+      }
+    };
+
+    function onDrop(source, target, piece, newPos, oldPos, orientation) {
+      var move = game.move({
+        from: source,
+        to: target,
+        promotion: 'q' 
+      });
+
+      // illegal move
+      if (move === null) return 'snapback';
+
+      updateStatus();
+      console.log(evaluateBoard(game.board()))
+      setTimeout(makeMove, 240)
+
+
+    };
+
+    function updateStatus() {
+      var status = '';
+
+      var moveColor = 'White';
+      if (game.turn() === 'b') {
+        moveColor = 'Black';
+      }
+
+      // checkmate?
+      if (game.in_checkmate()) {
+        status = 'Game over, ' + moveColor + ' is in checkmate.';
+      }
+
+      // draw?
+      else if (game.in_draw()) {
+        status = 'Game over, drawn position';
+      }
+
+      // game still on
+      else {
+        status = moveColor + ' to move';
+
+        // check?
+        if (game.in_check() === true) {
+          status += ', ' + moveColor + ' is in check';
+        }
+      }
+    }
+
+    function onSnapEnd() {
+      board.position(game.fen());
+    };
+
+
+    function minimaxRoot(depth, game, isMaximisingPlayer) {
+
+    var possibleMoves = game.ugly_moves();
+    var bestValue = -9999;
+    var bestMove;
+
+    for(var i = 0; i < possibleMoves.length; i++) {
+        var possibleMove = possibleMoves[i]
+        game.ugly_move(possibleMove);
+        var value = minimax(depth - 1, game, -10000, 10000, !isMaximisingPlayer);
+        game.undo();
+        if(value >= bestValue) {
+            bestValue = value;
+            bestMove = possibleMove;
+        }
+    }
+    return bestMove;
+};
+
+function minimax (depth, game, alpha, beta, isMaximisingPlayer) {
+    if (depth === 0) {
+        return -evaluateBoard(game.board());
+    }
+
+    var possibleMoves = game.ugly_moves();
+
+    if (isMaximisingPlayer) {
+        var bestValue = -9999;
+        for (var i = 0; i < possibleMoves.length; i++) {
+            game.ugly_move(possibleMoves[i]);
+            bestValue = Math.max(bestValue, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer));
+            game.undo();
+            alpha = Math.max(alpha, bestValue);
+            if (beta <= alpha) {
+                return bestValue;
+            }
+        }
+        return bestValue;
+    } else {
+        var bestValue = 9999;
+        for (var i = 0; i < possibleMoves.length; i++) {
+            game.ugly_move(possibleMoves[i]);
+            bestValue = Math.min(bestValue, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer));
+            game.undo();
+            beta = Math.min(beta, bestValue);
+            if (beta <= alpha) {
+                return bestValue;
+            }
+        }
+        return bestValue;
+    }
+};
+    function evaluateBoard(board) {
+      var totalEvaluation = 0;
+      for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+          totalEvaluation = totalEvaluation + getPieceValue(board[i][j], i, j);
+        }
+      }
+      return totalEvaluation;
+    };
+
+    function reverseArray(array) {
+      return array.slice().reverse();
+    };
+
+    var pawnEvalWhite = [
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      [5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0],
+      [1.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 1.0],
+      [0.5, 0.5, 1.0, 2.5, 2.5, 1.0, 0.5, 0.5],
+      [0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0],
+      [0.5, -0.5, -1.0, 0.0, 0.0, -1.0, -0.5, 0.5],
+      [0.5, 1.0, 1.0, -2.0, -2.0, 1.0, 1.0, 0.5],
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    ];
+
+    var pawnEvalBlack = reverseArray(pawnEvalWhite);
+
+    var knightEval = [
+      [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0],
+      [-4.0, -2.0, 0.0, 0.0, 0.0, 0.0, -2.0, -4.0],
+      [-3.0, 0.0, 1.0, 1.5, 1.5, 1.0, 0.0, -3.0],
+      [-3.0, 0.5, 1.5, 2.0, 2.0, 1.5, 0.5, -3.0],
+      [-3.0, 0.0, 1.5, 2.0, 2.0, 1.5, 0.0, -3.0],
+      [-3.0, 0.5, 1.0, 1.5, 1.5, 1.0, 0.5, -3.0],
+      [-4.0, -2.0, 0.0, 0.5, 0.5, 0.0, -2.0, -4.0],
+      [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0]
+    ];
+
+    var bishopEvalWhite = [
+      [-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0],
+      [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0],
+      [-1.0, 0.0, 0.5, 1.0, 1.0, 0.5, 0.0, -1.0],
+      [-1.0, 0.5, 0.5, 1.0, 1.0, 0.5, 0.5, -1.0],
+      [-1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, -1.0],
+      [-1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0],
+      [-1.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, -1.0],
+      [-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0]
+    ];
+
+    var bishopEvalBlack = reverseArray(bishopEvalWhite);
+
+    var rookEvalWhite = [
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      [0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5],
+      [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5],
+      [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5],
+      [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5],
+      [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5],
+      [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5],
+      [0.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0]
+    ];
+
+    var rookEvalBlack = reverseArray(rookEvalWhite);
+
+
+    var queenEval = [
+      [-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0],
+      [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0],
+      [-1.0, 0.0, 0.5, 0.5, 0.5, 0.5, 0.0, -1.0],
+      [-0.5, 0.0, 0.5, 0.5, 0.5, 0.5, 0.0, -0.5],
+      [0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 0.0, -0.5],
+      [-1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.0, -1.0],
+      [-1.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, -1.0],
+      [-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0]
+    ];
+
+    var kingEvalWhite = [
+
+      [-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+      [-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+      [-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+      [-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+      [-2.0, -3.0, -3.0, -4.0, -4.0, -3.0, -3.0, -2.0],
+      [-1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0],
+      [2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0],
+      [2.0, 3.0, 1.0, 0.0, 0.0, 1.0, 3.0, 2.0]
+    ];
+
+    var kingEvalBlack = reverseArray(kingEvalWhite);
+
+    function getPieceValue(piece, x, y) {
+      value = 0
+      color = 1;
+      isWhite = true
+      if (piece === null) {
+        return 0;
+      }
+      if (piece.color == 'b') {
+        color = -1
+        isWhite = false
+      }
+      switch (piece.type) {
+        case 'p':
+          value = 10 + (isWhite ? pawnEvalWhite[y][x] : pawnEvalBlack[y][x] );
+          break;
+        case 'n':
+          value = 32 + knightEval[y][x]
+          break;
+        case 'b':
+          value = 33 + isWhite? bishopEvalWhite[y][x]:bishopEvalBlack[y][x]
+          break;
+        case 'r':
+          value = 50 + isWhite? rookEvalWhite[y][x]:rookEvalBlack[y][x]
+          break;
+        case 'q':
+          value = 90 + queenEval[y][x]
+          break;
+        case 'k':
+          value = 1000 + isWhite? kingEvalWhite[y][x]:kingEvalBlack
+          break;
+        default:
+          throw "Unknown piece type: " + piece.type;
+      }
+      return value * color
+
+    };
+
+    function doMove(location) {
+      game.ugly_move(location)
+      board.position(game.fen());
+    }
+
+    function makeMove() {
+      var compMove = minimaxRoot(4, game, true)
+      console.log(compMove)
+      doMove(compMove)
+
+    }
+
+    var cfg = {
+      draggable: true,
+      position: 'start',
+      onDragStart: onDragStart,
+      onDrop: onDrop,
+      onSnapEnd: onSnapEnd
+    };
+    var board = ChessBoard('board', cfg);
+    updateStatus()
+  </script>
+</body>
+
+</html>
